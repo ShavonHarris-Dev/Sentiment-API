@@ -44,10 +44,10 @@ async def startup_event():
     global sentiment_pipeline
     try:
         logger.info("Loading sentiment analysis model...")
-        # Use a lightweight model for faster deployment
+        # Use a very lightweight model for faster deployment
         sentiment_pipeline = pipeline(
             "sentiment-analysis",
-            model="cardiffnlp/twitter-roberta-base-sentiment-latest",
+            model="distilbert-base-uncased-finetuned-sst-2-english",
             device=0 if torch.cuda.is_available() else -1
         )
         logger.info("Model loaded successfully!")
