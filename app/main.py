@@ -5,17 +5,22 @@ from datetime import datetime
 import os
 from transformers import pipeline
 import torch
+from collections import defaultdict
 
 from .models import TextInput, SentimentResponse, BatchTextInput, BatchSentimentResponse
 
 # Configure logging
+import os
+log_file = os.path.expanduser('~/app.log') if os.access('/app', os.W_OK) else None
+
+handlers = [logging.StreamHandler()]
+if log_file:
+    handlers.append(logging.FileHandler(log_file))
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('app.log'),
-        logging.StreamHandler()
-    ]
+    handlers=handlers
 )
 logger = logging.getLogger(__name__)
 
@@ -164,6 +169,19 @@ async def predict_sentiment_batch(input_data: BatchTextInput):
     except Exception as e:
         logger.error(f"Error in batch sentiment prediction: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+# Metrics tracking
+request_count = defaultdict(int)
+
+@app.middleware("http")
+async def count_requests(request, call_next):
+    request_count[request.url.path] += 1
+    response = await call_next(request)
+    return response
+
+@app.get("/metrics")
+async def get_metrics():
+    return {"request_counts": dict(request_count)}
 
 if __name__ == "__main__":
     import uvicorn
