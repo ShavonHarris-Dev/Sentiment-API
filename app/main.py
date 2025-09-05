@@ -43,6 +43,38 @@ app.add_middleware(
 # Global model variable
 sentiment_pipeline = None
 
+def detect_emotions(text, confidence):
+    """Simple keyword-based emotion detection"""
+    text_lower = text.lower()
+    emotions = {
+        "frustrated": 0.0,
+        "excited": 0.0, 
+        "confident": 0.0,
+        "uncertain": 0.0
+    }
+    
+    # Frustrated indicators
+    frustrated_words = ["hate", "awful", "terrible", "frustrated", "annoying", "stupid", "broken", "useless"]
+    emotions["frustrated"] = sum(0.2 for word in frustrated_words if word in text_lower)
+    
+    # Excited indicators  
+    excited_words = ["amazing", "awesome", "love", "excited", "fantastic", "brilliant", "perfect", "incredible"]
+    emotions["excited"] = sum(0.2 for word in excited_words if word in text_lower)
+    
+    # Confident indicators
+    confident_words = ["definitely", "certainly", "sure", "confident", "absolutely", "obviously"]
+    emotions["confident"] = sum(0.15 for word in confident_words if word in text_lower) + (confidence if confidence > 0.8 else 0)
+    
+    # Uncertain indicators
+    uncertain_words = ["maybe", "perhaps", "might", "unsure", "uncertain", "not sure", "i think", "probably"]
+    emotions["uncertain"] = sum(0.2 for word in uncertain_words if word in text_lower) + (0.5 if confidence < 0.6 else 0)
+    
+    # Normalize to 0-1 range
+    for emotion in emotions:
+        emotions[emotion] = min(1.0, emotions[emotion])
+        
+    return emotions
+
 @app.on_event("startup")
 async def startup_event():
     """Load the model on startup"""
@@ -106,10 +138,14 @@ async def predict_sentiment(input_data: TextInput):
         
         sentiment = label_mapping.get(result['label'], result['label'].lower())
         
+        # Simple emotion detection based on keywords
+        emotions = detect_emotions(input_data.text, result['score'])
+        
         response = SentimentResponse(
             text=input_data.text,
             sentiment=sentiment,
             confidence=round(result['score'], 4),
+            emotions=emotions,
             timestamp=datetime.now().isoformat()
         )
         
@@ -148,11 +184,13 @@ async def predict_sentiment_batch(input_data: BatchTextInput):
                 }
                 
                 sentiment = label_mapping.get(result['label'], result['label'].lower())
+                emotions = detect_emotions(text, result['score'])
                 
                 results.append(SentimentResponse(
                     text=text,
                     sentiment=sentiment,
                     confidence=round(result['score'], 4),
+                    emotions=emotions,
                     timestamp=datetime.now().isoformat()
                 ))
         

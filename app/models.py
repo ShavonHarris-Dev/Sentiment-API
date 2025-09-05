@@ -8,6 +8,7 @@ class SentimentResponse(BaseModel):
     text: str
     sentiment: str
     confidence: float
+    emotions: dict  # frustrated, excited, confident, uncertain
     timestamp: str
 
 class BatchTextInput(BaseModel):
