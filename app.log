@@ -1,2 +1,8 @@
 2025-09-05 11:05:31,379 - app.main - INFO - Loading sentiment analysis model...
 2025-09-05 11:05:42,418 - app.main - INFO - Model loaded successfully!
+2025-09-05 12:07:58,803 - app.main - INFO - Loading sentiment analysis model...
+2025-09-05 12:07:59,480 - app.main - INFO - Model loaded successfully!
+2025-09-05 12:08:41,315 - app.main - INFO - Processing sentiment prediction for text length: 20
+2025-09-05 12:08:41,422 - app.main - INFO - Prediction completed: positive (confidence: 0.9848)
+2025-09-05 12:11:34,251 - app.main - INFO - Processing sentiment prediction for text length: 20
+2025-09-05 12:11:34,394 - app.main - INFO - Prediction completed: positive (confidence: 0.9848)
